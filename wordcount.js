@@ -1,11 +1,13 @@
-let text = "XUXZLMGBRJGBGTCTGHIQXNMVKIAMFDXUXGPSOEVKMFHWNVVFRPCVFGMVGTEAIBGTCXUBJFEFUVCRQXTGHRWLNSAMYCHETNGRTLYMYYWVTSYOVQCFMVKEGBTYPYRUPEJBEEWOTJCHBGJGQVERPMAYFPQNMZMRFAFSPQEFMONEZIIITIWMAZFLPLBEPITTIBXBJLYPVMPYRQFRLRRKFDIKXTSXVHENVRVFLGRBMCHVWVYWNUFSXGAVYTCXRPEAVVMJNGFZNRVKQLBNCBRBMSCEYEFUIQMFGRSELCRPXKFIPHLPWRHWRLRWIYAVGXCBPXGREFTXSEEWREEVGJRXRVYLMPTCCVEHIQXUXVLHEXJSPGFRWXBLFKIRQKCRGUVYHVLTMZRKPMVNKVTIYTKGSABWYHETNGRTEFMOFPIMRTBKGWYBBCPLMYYXFHDCTBBERSEEZLIUTJZIRGDGWGTBCRSHIYRBMYCVNGURLRORPMBNJQXRIJREXXEQLBNCBFRKVRVNVVBYAMZJXUXTYYFXFDXUXKPSHUCCMFYFSRQCLBKRFVLXORVWIFAFSPQUVRLRVFLXEHCJMAZWYGGHI".toLowerCase()
+//let text = "XUXZLMGBRJGBGTCTGHIQXNMVKIAMFDXUXGPSOEVKMFHWNVVFRPCVFGMVGTEAIBGTCXUBJFEFUVCRQXTGHRWLNSAMYCHETNGRTLYMYYWVTSYOVQCFMVKEGBTYPYRUPEJBEEWOTJCHBGJGQVERPMAYFPQNMZMRFAFSPQEFMONEZIIITIWMAZFLPLBEPITTIBXBJLYPVMPYRQFRLRRKFDIKXTSXVHENVRVFLGRBMCHVWVYWNUFSXGAVYTCXRPEAVVMJNGFZNRVKQLBNCBRBMSCEYEFUIQMFGRSELCRPXKFIPHLPWRHWRLRWIYAVGXCBPXGREFTXSEEWREEVGJRXRVYLMPTCCVEHIQXUXVLHEXJSPGFRWXBLFKIRQKCRGUVYHVLTMZRKPMVNKVTIYTKGSABWYHETNGRTEFMOFPIMRTBKGWYBBCPLMYYXFHDCTBBERSEEZLIUTJZIRGDGWGTBCRSHIYRBMYCVNGURLRORPMBNJQXRIJREXXEQLBNCBFRKVRVNVVBYAMZJXUXTYYFXFDXUXKPSHUCCMFYFSRQCLBKRFVLXORVWIFAFSPQUVRLRVFLXEHCJMAZWYGGHI".toLowerCase()
 
-let keySize = 5;
+let text = "PYRFOAJXNSADSWHPGUEXXMRRXRBLLHVVOJSUXMTUANRWZVSUJZEEOOLRJHKHOXYZALVWUTHKFWENEYWMXGHPPWTIAVZHGBRESSAQAMGVKGGLPROSLHVMJSBWJXYBXTYMTUGVFIMFLODIZCVDWIBRWNXEOBSGPRAZWMFVGPZHSEWNXTVVTCCQUSWNJDJIBSBLOKAGKUTLGHWPFMFBMNUSAHTRSGEELAZRZVOWULIFTLVEQDZDDIOIWRXVUKBZJXHAWTKPKGKDTXHRUHLVIVMDSHAAVTYEZDVLMMPCARIMVZOWFSFGZIJTGFWVIENQSLJSMSCUHMAASWZJKCTWIIAOGVVAKFSGFEDNFDSYXWSGBRDGZAKERSLDOHEETAIXNCZRNIWNTRRLGAHRCMAFSNUVUUSUJRFNFTTLOZRUFROSLHVELCFHTEIQOEIIGZGREIAQSNUFAFWHEENQLHRXZVSGBVKSDAKAOZRHSREFKBVCUBRWIICUMRTLEOFGJRTRJSVGZSRZJXHQAKVWGBRPPYNQKAEHMOHHTAIGZSTEZHSUFHCNLTCILSSGJRGBFIKAGGHKFQAEKHVWGBRWIETGZECSCZSDEINYANVFKMCQEAAFLHVVOJSUBRDGZAKXNSRLTXAALSRZGUSOBMRSJODANWQKULEJANUAGGFXTLIAYWRWZVSVFEAAVTYEZHVHTQAYDBLRJZSRGWHVNEIWMFCZJRGNXRRMJCTLUELYSNUFKUWQOMNTLOTVEKOVQMP".toLowerCase();
 
-let frequencyTables = [[],[],[],[],[]];
-let partialCipherTexts = ["","","","",""];
+let keySize = 12;
+
+let frequencyTables = init2d(keySize, Array);
+let partialCipherTexts = init2d(keySize, String);
 for(let i = 0; i < text.length; i++) {
-	let ticker = i % 5;
+	let ticker = i % keySize;
 	let currentChar = text[i]
 	let curCode = (currentChar.charCodeAt(0) + 26) % 26 + 'a'.charCodeAt(0)
 	let index = 'z'.charCodeAt(0) - curCode;
@@ -14,9 +16,8 @@ for(let i = 0; i < text.length; i++) {
 	partialCipherTexts[ticker] += currentChar;
 }
 
-let freqDist = 'etaio'
+let freqDist = 'etaoinsrhld';
 let freqTableGuesses = [];
-let guess = '';
 
 for(let freqTable in frequencyTables) {
   let guesses = []; 
@@ -29,21 +30,38 @@ for(let freqTable in frequencyTables) {
 	});
 }
 
-
+let freqTableDistFrequencies = [];
 for(let i = 0; i < frequencyTables.length; i++) {
   let curTable = frequencyTables[i];
-  for(let j = 0; j < curTable.length; j++) {
+	let distanceFrequency = [];
+  for(let j = 0; j < 11; j++) {
 		let subArr = curTable[j];
 		if(subArr === undefined) continue;
 		let freqChar = subArr[0];
   	for(let k = 0; k < freqDist.length; k++) {
 	    let distChar = freqDist[k];
 		  let distance = charDist(freqChar, distChar);
-      console.log("Table: ", i, "Freq Char: ", freqChar, "Dist Char: ", distChar, " - ", fromCode(distance));
+			let finalChar = fromCode(distance);
+      console.log("Table: ", i, "Freq Char: ", freqChar, "Dist Char: ", distChar, "Distance: ", ("000" + distance).slice(-4), " - ", fromCode(distance));
+			distanceFrequency[distance] = distanceFrequency[distance] || [finalChar, 0];
+			distanceFrequency[distance][1]++;
 	  }
 		console.log("\n")
 	}
+  distanceFrequency = distanceFrequency.sort((a,b) => {
+	  return b[1] - a[1];
+	});
+	freqTableDistFrequencies.push(distanceFrequency);
+	
 }
+
+let guess = '';
+for(let table in freqTableDistFrequencies) {
+	let selTable = freqTableDistFrequencies[table];
+	if(selTable[0]) guess += selTable[0][0];
+}
+
+attempt(guess);
 
 function fromCode(code) {
   return String.fromCharCode(code);
@@ -56,15 +74,22 @@ function charDist(a, b) {
 	return ((charCodeA - charCodeB) + 26) % 26 + 'a'.charCodeAt(0);
 }
 
+function init2d(len, fillerProto) {
+  let initial = [];
+	for(let i = 0; i < len; i++) {
+	  initial.push(new fillerProto);
+	}
+  return initial;
+}
+
 function attempt(crackKey) {
   let out = ''
-	let cols = [[],[],[],[],[]]
+	let cols = init2d(keySize, Array);
   for(let i = 0; i < text.length; i++) {
-	  let tick = i % 5;
+	  let tick = i % keySize;
 	  let curChar = crackKey[tick].charCodeAt(0);
 	  let curTxtChar = text[i].charCodeAt(0);
 		let guessChar =  String.fromCharCode((curTxtChar - curChar + 26) % 26 + 'a'.charCodeAt(0));
-		cols[tick].push(guessChar);
 	  out += guessChar;
 	}
 //	console.log(cols);
